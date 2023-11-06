@@ -2,32 +2,65 @@ import React, { Component } from 'react'
 import NewsItem from './NewsItem'
 
 export class News extends Component {
-  articles = []
   constructor(){
     super();
     this.state = {
       articles : [],
-      loading : false
+      loading : false,
+      page : 1
     }
   }
   async componentDidMount(){
     
-    let url = "https://newsapi.org/v2/top-headlines?country=in&apiKey=39674f5c32724f34b8a961b6e275aaf8"
+    let url = "https://newsapi.org/v2/top-headlines?country=in&apiKey=39674f5c32724f34b8a961b6e275aaf8&page=1pageSize=20";
     let data = await fetch(url);
     let parsedData = await data.json()
     console.log(parsedData);
-    this.setState({articles:parsedData.articles})
+    this.setState({articles:parsedData.article, totalResults:parsedData.totalResults})
+  }
+
+ handlePrevClick = async ()=>{
+    console.log("Previous")
+    let url =  `https://newsapi.org/v2/top-headlines?country=in&apiKey=39674f5c32724f34b8a961b6e275aaf8 ${this.state.page-1}&pageSize=20`;
+    let data = await fetch(url);
+    let parsedData = await data.json()
+    console.log(parsedData);
+    this.setState({
+      page:this.state.page-1,
+      articles:parsedData.articles
+    })
+    
+  }
+   handleNextClick =async ()=>{
+    console.log("Next")
+    if(this.state.page+1 > Math.ceil(this.state.totalResults/20)){
+
+    }
+    else{
+      let url = `https://newsapi.org/v2/top-headlines?country=in&apiKey=39674f5c32724f34b8a961b6e275aaf8 ${this.state.page+1}&pageSize=20`;
+      let data = await fetch(url);
+      let parsedData = await data.json()
+      console.log(parsedData);
+      this.setState({
+        page:this.state.page+1,
+        articles:parsedData.articles
+      })
+    }
   }
   render() {
     return (
       <div className='container my-3'>
-        <h1>News4You Breaking News</h1>
+        <h1>Breaking News</h1>
         <div className="row">
           {this.state.articles.map((element)=>{
             return <div className="col-md-4" key = {element.url}>
-            <NewsItem  title = {element.title?element.title.slice(0, 40):""} description = {element.description?element.description.slice(0, 85):""} imageUrl = {element.urlToImage?element.urlToImage:"https://www.google.com/url?sa=i&url=https%3A%2F%2Flinktr.ee%2Fnews4you.in&psig=AOvVaw0a_CzS69IRoN2fqGsIH713&ust=1699349342234000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCIicyeGHr4IDFQAAAAAdAAAAABAJ"} newsUrl = {element.url}/>
+              <NewsItem  title = {element.title?element.title:""} description = {element.description?element.description:""} imageUrl = {element.urlToImage} newsUrl = {element.url}/>
             </div>
           })}
+        </div>
+        <div className="container d-flex justify-content-between">
+          <button disabled={this.state.page<=1}type="button" className="btn btn-dark" onClick={this.handlePrevClick}>&larr; Previous </button>
+          <button type="button" className="btn btn-dark" onClick={this.handleNextClick}>Next &rarr;</button>
         </div>
       </div>
     )
